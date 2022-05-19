@@ -49,13 +49,13 @@ def evaluate_model(hyper_params: dict, network_params: dict, writer: SummaryWrit
     # evaluate on all individual files for both train and test set
     train_loss, train_metrics = evaluate(train_loader)
     test_loss, test_metrics = evaluate(test_loader)
-    # write results into files and log parameters
+    # write results to files and log parameters
     save_losses(train_loss, test_loss)
     save_metrics(train_metrics, test_metrics)
     log_params(test_metrics)
     print(f'final test accuracy: {test_metrics["accuracy"]}')
     print(f'final test top 2 accuracy: {test_metrics["top_2_accuracy"]}')
-    print(f'final test F-score: {test_metrics["f_score"]}')
+    print(f'final test macro F-score: {test_metrics["macro_f_score"]}')
 
 
 def save_losses(train_loss, test_loss):
@@ -76,7 +76,7 @@ def calculate_metrics(targets_list: List[np.ndarray], predictions_list: List[np.
     accuracy = accuracy_score(targets, predictions)
     top_k_accuracy = top_k_accuracy_score(targets, predictions_array, k=2)
     f_score = f1_score(targets, predictions, average='macro')
-    return {'accuracy': accuracy, 'top_2_accuracy': top_k_accuracy, 'f_score': f_score}
+    return {'accuracy': accuracy, 'top_2_accuracy': top_k_accuracy, 'macro_f_score': f_score}
 
 
 def save_metrics(train_metrics, test_metrics):
