@@ -1,0 +1,19 @@
+{
+  "hyper_params": {
+    "learning_rate": 1e-4,
+    "weight_decay": 1e-5,
+    "n_updates": 6000,
+    "batch_size": 16
+  },
+  "network_config": {
+    "n_hidden_layers": 1,
+    "n_in_channels": 3,
+    "n_kernels": 32,
+    "kernel_size": 3
+  },
+  "eval_settings": {
+    "log_stats_at": 200,
+    "plot_at": 200,
+    "validate_at": 400
+  }
+}

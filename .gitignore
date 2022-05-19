@@ -1,0 +1,6 @@
+.idea/
+data/
+results/
+tensorboard/
+venv/
+results.zip
