@@ -15,13 +15,6 @@ from util import write_dict_to_file
 
 
 def evaluate_model(hyper_params: dict, network_params: dict, writer: SummaryWriter):
-    def log_params(metrics):
-        # combine parameter dictionaries into a single one
-        all_params = hyper_params.copy()
-        all_params.update(network_params)
-        # log hyper-parameters and metrics to tensorboard
-        writer.add_hparams(all_params, metrics)
-
     def evaluate(dataloader: torch.utils.data.DataLoader) -> Tuple[torch.Tensor, dict]:
         loss = torch.tensor(0., device=device)
         all_targets, all_predictions = [], []
@@ -39,6 +32,13 @@ def evaluate_model(hyper_params: dict, network_params: dict, writer: SummaryWrit
             # compute final metrics
             metrics = calculate_metrics(all_targets, all_predictions)
             return loss, metrics
+
+    def log_params(metrics):
+        # combine parameter dictionaries into a single one
+        all_params = hyper_params.copy()
+        all_params.update(network_params)
+        # log hyper-parameters and metrics to tensorboard
+        writer.add_hparams(all_params, metrics)
 
     net = torch.load(model_path, map_location='cpu').to(device)
     # create datasets and loaders

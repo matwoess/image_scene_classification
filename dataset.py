@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import csv
 from pathlib import Path
 from typing import List, Tuple, Dict
@@ -9,7 +10,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms as TF
 
 import util
-from constants import data_root, scene_classes, class_mapping
+from constants import data_root, scene_classes, class_mapping, images_width, images_height
 
 
 def create_dataset_file(data_folder: Path, dataset_file: Path):
@@ -24,11 +25,11 @@ def create_dataset_file(data_folder: Path, dataset_file: Path):
         invalid_writer = csv.writer(f_invalid)
         invalid_writer.writerow(['id', 'label', 'path', 'width', 'height'])
         for img_id, label, path in zip(ids, labels, images):
-            shape = util.get_image_shape(path)
-            if shape == (150, 150):
+            width, height = util.get_image_shape(path)
+            if (width, height) == (images_width, images_height):
                 dataset_writer.writerow([img_id, label, path])
             else:
-                invalid_writer.writerow([img_id, label, path, shape[0], shape[1]])
+                invalid_writer.writerow([img_id, label, path, width, height])
 
 
 def read_dataset_file(dataset_file: Path) -> Dict:

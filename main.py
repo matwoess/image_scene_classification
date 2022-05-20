@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 import shutil
 from datetime import datetime
 from typing import Iterator
 
 import numpy as np
 import torch
-from pathlib import Path
 
 import tqdm as tqdm
 from torch import Tensor
@@ -29,6 +29,14 @@ def validate_model(net: torch.nn.Module, dataloader: torch.utils.data.DataLoader
             loss += loss_fn(predictions, targets)
         loss /= len(dataloader)
     return loss
+
+
+def log_validation_params(writer: SummaryWriter, val_loss: Tensor, params: Iterator[Parameter], update: int) -> None:
+    writer.add_scalar(tag='validation/loss', scalar_value=val_loss, global_step=update)
+    for i, param in enumerate(params):
+        writer.add_histogram(tag=f'validation/param_{i}', values=param.cpu(), global_step=update)
+    for i, param in enumerate(params):
+        writer.add_histogram(tag=f'validation/gradients_{i}', values=param.grad.cpu(), global_step=update)
 
 
 def main(hyper_params: dict, network_config: dict, eval_settings: dict, full_data_mode: bool = False):
@@ -85,14 +93,14 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, full_dat
                 print(f'val_loss: {val_loss}')
                 log_validation_params(writer, val_loss, net.parameters(), update)
                 if val_loss < best_loss:
-                    print(f'{val_loss} < {best_loss}... saving as new {model_path.parts[-1]}')
+                    print(f'{val_loss} < {best_loss}... saving as new {model_path.name}')
                     best_loss = val_loss
                     torch.save(net, model_path)
             elif full_data_mode:
                 # in eval mode, just compare train_loss
                 train_loss = loss.cpu()
                 if train_loss < best_loss:
-                    print(f'{train_loss} < {best_loss}... saving as new {model_path.parts[-1]}')
+                    print(f'{train_loss} < {best_loss}... saving as new {model_path.name}')
                     best_loss = train_loss
                     torch.save(net, model_path)
 
@@ -109,14 +117,6 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, full_dat
     evaluation.evaluate_model(hyper_params, network_config, writer)
     print('zipping "results" folder...')
     util.zip_folder(out_root, 'results_' + experiment_id)
-
-
-def log_validation_params(writer: SummaryWriter, val_loss: Tensor, params: Iterator[Parameter], update: int) -> None:
-    writer.add_scalar(tag='validation/loss', scalar_value=val_loss, global_step=update)
-    for i, param in enumerate(params):
-        writer.add_histogram(tag=f'validation/param_{i}', values=param.cpu(), global_step=update)
-    for i, param in enumerate(params):
-        writer.add_histogram(tag=f'validation/gradients_{i}', values=param.grad.cpu(), global_step=update)
 
 
 if __name__ == '__main__':

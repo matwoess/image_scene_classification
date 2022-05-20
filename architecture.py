@@ -1,17 +1,20 @@
+# -*- coding: utf-8 -*-
 import torch
 from torch.nn import Conv2d, ReLU, Sequential, MaxPool2d, Linear, Softmax
+
+from constants import images_width, images_height
 
 
 class Flatten(torch.nn.Module):
     def forward(self, x):
-        return x.resize(x.shape[0], x.shape[-2] * x.shape[-1])
+        return x.reshape(x.shape[0], x.shape[-2] * x.shape[-1])
 
 
 class SimpleCNN(torch.nn.Module):
     def __init__(self, n_in_channels: int = 3, n_hidden_layers: int = 2, n_kernels: int = 32, kernel_size: int = 3,
                  out_features: int = 6):
-        """Simple CNN with `n_hidden_layers`, `n_kernels`, and `kernel_size` as hyperparameters"""
         super(SimpleCNN, self).__init__()
+        n_pixels = int(images_width * images_height)
         cnn = []
         for i in range(n_hidden_layers):
             cnn.append(Conv2d(in_channels=n_in_channels, out_channels=n_kernels,
@@ -20,11 +23,13 @@ class SimpleCNN(torch.nn.Module):
             n_in_channels = n_kernels
         self.hidden_layers = Sequential(*cnn)
         self.max_pool1 = MaxPool2d((3, 3))
+        n_pixels //= 3 * 3
         self.output_layer = Conv2d(in_channels=n_in_channels, out_channels=1,
                                    kernel_size=kernel_size, bias=True, padding=int(kernel_size / 2))
         self.max_pool2 = MaxPool2d((2, 2))
+        n_pixels //= 2 * 2
         self.flatten = Flatten()
-        self.fnn = Linear(in_features=625, out_features=out_features)
+        self.fnn = Linear(in_features=n_pixels, out_features=out_features)
         self.softmax = Softmax(dim=0)
 
     def forward(self, x):
