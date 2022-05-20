@@ -8,6 +8,7 @@ config_path = Path('config.json')
 scene_classes = ['buildings', 'forest', 'glacier', 'mountain', 'sea', 'street']
 class_mapping = {'buildings': 0, 'forest': 1, 'glacier': 2, 'mountain': 3, 'sea': 4, 'street': 5}
 images_width = images_height = 150
+image_channels = 3
 
 data_root = Path('data')
 out_root = Path('results')

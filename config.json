@@ -7,7 +7,6 @@
   },
   "network_config": {
     "n_hidden_layers": 1,
-    "n_in_channels": 3,
     "n_kernels": 32,
     "kernel_size": 3
   },
