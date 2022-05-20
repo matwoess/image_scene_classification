@@ -26,7 +26,7 @@ class SimpleCNN(torch.nn.Module):
         n_pixels //= 2 * 2
         self.flatten = Flatten(start_dim=1)
         self.fnn = Linear(in_features=n_pixels, out_features=out_features)
-        self.softmax = Softmax(dim=0)
+        self.softmax = Softmax(dim=1)
 
     def forward(self, x):
         x = self.hidden_layers(x)  # (B, C, X, Y) -> (B, K, X, Y)
