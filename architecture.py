@@ -26,7 +26,6 @@ class SimpleCNN(torch.nn.Module):
         n_pixels //= 2 * 2
         self.flatten = Flatten(start_dim=1)
         self.fnn = Linear(in_features=n_pixels, out_features=out_features)
-        self.softmax = Softmax(dim=1)
 
     def forward(self, x):
         x = self.hidden_layers(x)  # (B, C, X, Y) -> (B, K, X, Y)
@@ -35,5 +34,4 @@ class SimpleCNN(torch.nn.Module):
         x = self.max_pool2(x)  # (B, 1, X/3, Y/3) -> (B, K, X/6, Y/6)
         x = self.flatten(x)  # (B, 1, X/6, Y/6) -> (B, X/6*Y/6)
         x = self.fnn(x)  # (B, X*Y/36) -> (B, out_features)
-        x = self.softmax(x)  # all predictions between 0 and 1, sum to 1
         return x

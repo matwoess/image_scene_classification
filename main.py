@@ -59,7 +59,7 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, full_dat
     # Save initial model as "best" model (will be overwritten later)
     if not model_path.exists():
         torch.save(net, model_path)
-    else:  # if there already exists a model, just load parameters
+    else:  # if there already exists a model, just load it instead
         print(f'reusing pre-trained model: "{model_path}"')
         net = torch.load(model_path, map_location=torch.device('cpu'))
     net.to(device)
@@ -97,14 +97,13 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, full_dat
                     best_loss = val_loss
                     torch.save(net, model_path)
             elif full_data_mode:
-                # in eval mode, just compare train_loss
+                # in full-data-mode, just compare train_loss
                 train_loss = loss.cpu()
                 if train_loss < best_loss:
                     print(f'{train_loss} < {best_loss}... saving as new {model_path.name}')
                     best_loss = train_loss
                     torch.save(net, model_path)
 
-            # update progress and update-counter
             progress_bar.set_description(f"loss: {loss:7.5f}", refresh=True)
             progress_bar.update()
             update += 1

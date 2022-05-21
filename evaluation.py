@@ -24,7 +24,6 @@ def evaluate_model(hyper_params: dict, network_params: dict, writer: SummaryWrit
                 inputs = inputs.to(device, dtype=torch.float32)
                 targets = targets.to(device, dtype=torch.float32)
                 predictions = net(inputs)
-                # accumulate data
                 loss += loss_fn(predictions, targets)
                 detach_predictions = predictions.detach().cpu().numpy()
                 all_predictions.append(detach_predictions)
