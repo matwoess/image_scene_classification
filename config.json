@@ -12,7 +12,6 @@
   },
   "eval_settings": {
     "log_stats_at": 200,
-    "plot_at": 200,
     "validate_at": 400
   }
 }

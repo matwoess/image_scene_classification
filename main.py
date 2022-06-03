@@ -39,7 +39,7 @@ def log_validation_params(writer: SummaryWriter, val_loss: Tensor, params: Itera
         writer.add_histogram(tag=f'validation/gradients_{i}', values=param.grad.cpu(), global_step=update)
 
 
-def main(hyper_params: dict, network_config: dict, eval_settings: dict):
+def main(hyper_params: dict, network_config: dict, eval_settings: dict, eval_only: bool):
     experiment_id = datetime.now().strftime("%Y%m%d-%H%M%S")
     writer = SummaryWriter(log_dir=str(tensorboard_root / experiment_id))
     shutil.copyfile(config_path, out_root / 'config.json')  # save current config file to results
@@ -63,7 +63,7 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict):
     validate_at = eval_settings['validate_at']
     best_loss = np.inf  # best validation loss so far
     progress_bar = tqdm.tqdm(total=n_updates, desc=f"loss: {np.nan:7.5f}", position=0)
-    update = 0
+    update = 0 if not eval_only else n_updates + 1
 
     while update <= n_updates:
         for inputs, targets, labels, img_ids, idx in train_loader:
@@ -94,7 +94,8 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict):
                 break
 
     progress_bar.close()
-    print('finished training.')
+    if not eval_only:
+        print('finished training.')
     print('starting evaluation...')
     evaluation.evaluate_model(hyper_params, network_config, writer)
     print('zipping "results" folder...')
@@ -102,8 +103,13 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict):
 
 
 if __name__ == '__main__':
+    from argparse import ArgumentParser
     import json
 
+    parser = ArgumentParser()
+    parser.add_argument('-eval', required=False, dest='eval_only', action='store_true', default=False,
+                        help='only evaluate a pre-trained model on the test set (without training)')
+    args = parser.parse_args()
     with open(config_path, 'r') as fh:
         config_args = json.load(fh)
-    main(**config_args)
+    main(eval_only=args.eval_only, **config_args)

@@ -20,3 +20,5 @@ tensorboard_root.mkdir(exist_ok=True, parents=True)
 # torch specific constants
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 loss_fn = torch.nn.CrossEntropyLoss()
+# miscellaneous
+evaluate_on_training_set = False
