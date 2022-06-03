@@ -15,22 +15,22 @@ from util import write_dict_to_file
 
 
 def evaluate_model(hyper_params: dict, network_params: dict, writer: SummaryWriter):
+    @torch.no_grad()
     def evaluate(dataloader: torch.utils.data.DataLoader) -> Tuple[torch.Tensor, dict]:
         loss = torch.tensor(0., device=device)
         all_targets, all_predictions = [], []
-        with torch.no_grad():
-            for inputs, targets, labels, img_ids, idx in tqdm(dataloader, desc='evaluating', position=0):
-                all_targets.append(targets.numpy())
-                inputs = inputs.to(device, dtype=torch.float32)
-                targets = targets.to(device, dtype=torch.float32)
-                predictions = net(inputs)
-                loss += loss_fn(predictions, targets)
-                detach_predictions = predictions.detach().cpu().numpy()
-                all_predictions.append(detach_predictions)
-            loss /= len(dataloader)
-            # compute final metrics
-            metrics = calculate_metrics(all_targets, all_predictions)
-            return loss, metrics
+        for inputs, targets, labels, img_ids, idx in tqdm(dataloader, desc='evaluating', position=0):
+            all_targets.append(targets.numpy())
+            inputs = inputs.to(device, dtype=torch.float32)
+            targets = targets.to(device, dtype=torch.float32)
+            predictions = net(inputs)
+            loss += loss_fn(predictions, targets)
+            detach_predictions = predictions.detach().cpu().numpy()
+            all_predictions.append(detach_predictions)
+        loss /= len(dataloader)
+        # compute final metrics
+        metrics = calculate_metrics(all_targets, all_predictions)
+        return loss, metrics
 
     def log_params(metrics):
         # combine parameter dictionaries into a single one
