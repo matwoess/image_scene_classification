@@ -112,4 +112,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     with open(config_path, 'r') as fh:
         config_args = json.load(fh)
+    # Set a known random seed for reproducibility
+    torch.random.manual_seed(0)
+    np.random.seed(0)
     main(eval_only=args.eval_only, **config_args)
