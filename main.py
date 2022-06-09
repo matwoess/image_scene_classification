@@ -52,7 +52,7 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, eval_onl
     train_loader = DataLoader(train_subset, batch_size=hyper_params['batch_size'], shuffle=True, num_workers=0)
 
     net = SimpleCNN(**network_config)
-    print(f'saving initial model as: "{model_path}"')
+    print(f'saving initial model as: <{model_path}>')
     torch.save(net, model_path)
     net.to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=hyper_params['learning_rate'],
@@ -80,10 +80,10 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, eval_onl
 
             if update % validate_at == 0 and update > 0:
                 val_loss = validate_model(net, val_loader)
-                print(f'val_loss: {val_loss}')
+                print(f'[update={update}] val_loss: {val_loss:.5f}')
                 log_validation_params(writer, val_loss, net.parameters(), update)
                 if val_loss < best_loss:
-                    print(f'{val_loss} < {best_loss}... saving as new {model_path.name}')
+                    print(f'> new {model_path.name} ({val_loss:.5f} < {best_loss:.5f})')
                     best_loss = val_loss
                     torch.save(net, model_path)
 

@@ -58,9 +58,9 @@ def evaluate_model(hyper_params: dict, network_params: dict, writer: SummaryWrit
     plot_confusion_matrix(test_cm, test_metrics['accuracy'], img_path=out_root / 'test_cm.png')
 
     log_params(test_metrics)
-    print(f'final test accuracy: {test_metrics["accuracy"]}')
-    print(f'final test top 2 accuracy: {test_metrics["top_2_accuracy"]}')
-    print(f'final test macro F-score: {test_metrics["macro_f_score"]}')
+    print(f'final test accuracy: {test_metrics["accuracy"]:.5f}')
+    print(f'final test top 2 accuracy: {test_metrics["top_2_accuracy"]:.5f}')
+    print(f'final test macro F-score: {test_metrics["macro_f_score"]:.5f}')
 
 
 def calculate_metrics(targets_list: List[np.ndarray], predictions_list: List[np.ndarray]) -> dict:

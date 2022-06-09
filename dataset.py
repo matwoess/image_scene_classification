@@ -14,7 +14,7 @@ from constants import data_root, scene_classes, class_mapping, images_width, ima
 
 
 def create_dataset_file(data_folder: Path, dataset_file: Path):
-    print(f'creating dataset file {dataset_file}')
+    print(f'creating dataset file <{dataset_file}>')
     images = list(data_folder.rglob("*.jpg"))
     ids = [int(img.stem) for img in images]
     labels = [img.parent.stem for img in images]
@@ -50,7 +50,7 @@ class SceneDataset(Dataset):
         if not dataset_file.exists():
             create_dataset_file(data_folder, dataset_file)
         data = read_dataset_file(dataset_file)
-        print(f'loaded dataset from {dataset_file}')
+        print(f'loaded dataset from <{dataset_file}>')
         self.images = data['paths']
         self.labels = data['labels']
         self.ids = data['ids']
@@ -68,8 +68,8 @@ class SceneDataset(Dataset):
             split_point = int(len(cls_indices) * train_split_size)
             train_indices += cls_indices[:split_point]
             val_indices += cls_indices[split_point:]
-        print(f'length of train indices: {len(train_indices)}')
-        print(f'length of val indices: {len(val_indices)}')
+        print(f'number of training images: {len(train_indices)}')
+        print(f'number of validation images: {len(val_indices)}')
         return train_indices, val_indices
 
 
