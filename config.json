@@ -1,14 +1,14 @@
 {
   "hyper_params": {
-    "learning_rate": 1e-3,
-    "weight_decay": 1e-4,
-    "n_updates": 10000,
+    "learning_rate": 1e-4,
+    "weight_decay": 1e-5,
+    "n_updates": 15000,
     "batch_size": 16
   },
   "network_config": {
-    "n_hidden_layers": 2,
-    "n_kernels": 32,
-    "kernel_size": 3
+    "initial_kernels": 16,
+    "kernel_size": 3,
+    "n_hidden_ffn_neurons": 2048
   },
   "eval_settings": {
     "log_stats_at": 250,

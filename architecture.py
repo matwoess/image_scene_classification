@@ -1,37 +1,49 @@
 # -*- coding: utf-8 -*-
 import torch
-from torch.nn import Conv2d, ReLU, Sequential, MaxPool2d, Linear, Softmax, Flatten
+from torch.nn import Conv2d, ReLU, Sequential, MaxPool2d, Linear, Flatten, Dropout
 
-from constants import images_width, images_height, image_channels
+from constants import images_width, image_channels
 
 
 class SimpleCNN(torch.nn.Module):
-    def __init__(self, n_hidden_layers: int = 2, n_kernels: int = 32, kernel_size: int = 3, out_features: int = 6):
+    def __init__(self, initial_kernels=16, kernel_size=3, n_hidden_ffn_neurons=2048, out_features=6):
         super(SimpleCNN, self).__init__()
-        n_pixels = int(images_width * images_height)
+        edge_dim = images_width  # == 'images_height'
         n_in_channels = image_channels
-        cnn = []
-        for i in range(n_hidden_layers):
-            cnn.append(Conv2d(in_channels=n_in_channels, out_channels=n_kernels,
-                              kernel_size=kernel_size, bias=True, padding=int(kernel_size / 2)))
-            cnn.append(ReLU())
+        n_kernels = initial_kernels
+        padding = kernel_size // 2
+        for i, pooling in enumerate((2, 3, 2, 2)):
+            layer = Sequential(
+                Conv2d(n_in_channels, n_kernels, kernel_size=kernel_size, padding=padding),
+                ReLU(),
+                Conv2d(n_kernels, n_kernels, kernel_size=kernel_size, padding=padding),
+                ReLU(),
+            )
+            self.__setattr__(f'cnn_stage{i + 1}', layer)
+            self.__setattr__(f'max_pool{i + 1}', MaxPool2d(pooling, pooling))
+            edge_dim //= pooling
             n_in_channels = n_kernels
-        self.hidden_layers = Sequential(*cnn)
-        self.max_pool1 = MaxPool2d((3, 3))
-        n_pixels //= 3 * 3
-        out = [Conv2d(in_channels=n_in_channels, out_channels=1,
-                      kernel_size=kernel_size, bias=True, padding=int(kernel_size / 2)), ReLU()]
-        self.output_layer = Sequential(*out)
-        self.max_pool2 = MaxPool2d((2, 2))
-        n_pixels //= 2 * 2
+            n_kernels *= 2
+        n_kernels //= 2  # last layer did not increase kernel size --- for computation of n_in_features
         self.flatten = Flatten(start_dim=1)
-        self.fnn = Linear(in_features=n_pixels, out_features=out_features)
+        n_in_features = edge_dim ** 2 * n_kernels
+        self.fnn = Sequential(
+            Linear(in_features=n_in_features, out_features=n_hidden_ffn_neurons),
+            ReLU(),
+            Dropout(p=0.5),
+        )
+        self.out_layer = Linear(in_features=n_hidden_ffn_neurons, out_features=out_features)
 
     def forward(self, x):
-        x = self.hidden_layers(x)  # (B, C, X, Y) -> (B, K, X, Y)
-        x = self.max_pool1(x)  # (B, K, X, Y) -> (B, K, X/3, Y/3)
-        x = self.output_layer(x)  # (B, K, X/3, Y/3) -> (B, 1, X/3, Y/3)
-        x = self.max_pool2(x)  # (B, 1, X/3, Y/3) -> (B, K, X/6, Y/6)
-        x = self.flatten(x)  # (B, 1, X/6, Y/6) -> (B, X/6*Y/6)
-        x = self.fnn(x)  # (B, X*Y/36) -> (B, out_features)
+        x = self.cnn_stage1(x)  # (B, C, X, Y) -> (B, K, X, Y)
+        x = self.max_pool1(x)  # (B, K, X, Y) -> (B, K, X/2, Y/2)
+        x = self.cnn_stage2(x)  # (B, K, X/2, Y/2) -> (B, 2K, X/2, Y/2)
+        x = self.max_pool2(x)  # (B, 2K, X/2, Y/2) -> (B, 2K, X/6, Y/6)
+        x = self.cnn_stage3(x)  # (B, 2K, X/6, Y/6) -> (B, 4K, X/6, Y/6)
+        x = self.max_pool3(x)  # (B, 4K, X/6, Y/6) -> (B, 4K, X//12, Y//12)
+        x = self.cnn_stage4(x)  # (B, 4K, X/12, Y/12) -> (B, 8K, X/12, Y/12)
+        x = self.max_pool4(x)  # (B, 8K, X/12, Y/12) -> (B, 8K, X/24, Y/24)
+        x = self.flatten(x)  # (B, 8K, X/24, Y/24) -> (B, 8K*X/24*Y/24)
+        x = self.fnn(x)  # (B, 8K*X/24*Y/24) -> (B, n_hidden_ffn_neurons)
+        x = self.out_layer(x)  # (B, n_hidden_ffn_neurons) -> (B, out_features)
         return x
