@@ -44,10 +44,11 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, eval_onl
     writer = SummaryWriter(log_dir=str(tensorboard_root / experiment_id))
     shutil.copyfile(config_path, out_root / 'config.json')  # save current config file to results
 
-    training_dataset = TrainingDataset(split="seg_train")
+    training_dataset = TrainingDataset(split="seg_train", augment=True)
+    validation_dataset = TrainingDataset(split="seg_train")
     train_indices, val_indices = training_dataset.get_train_val_subsets()
     train_subset = Subset(training_dataset, train_indices)
-    val_subset = Subset(training_dataset, val_indices)
+    val_subset = Subset(validation_dataset, val_indices)
     val_loader = DataLoader(val_subset, batch_size=hyper_params['batch_size'], shuffle=False, num_workers=0)
     train_loader = DataLoader(train_subset, batch_size=hyper_params['batch_size'], shuffle=True, num_workers=0)
 
@@ -113,6 +114,6 @@ if __name__ == '__main__':
     with open(config_path, 'r') as fh:
         config_args = json.load(fh)
     # Set a known random seed for reproducibility
-    torch.random.manual_seed(0)
+    torch.manual_seed(0)
     np.random.seed(0)
     main(eval_only=args.eval_only, **config_args)

@@ -80,11 +80,19 @@ def _label_to_one_hot(label: str) -> Tensor:
 
 
 class TrainingDataset(SceneDataset):
+    random_pil_augmentations = TF.Compose([TF.RandomHorizontalFlip()])
     pil_to_tensor = TF.Compose([TF.ToTensor()])
+
+    def __init__(self, split: str, augment=False):
+        super(TrainingDataset, self).__init__(split=split)
+        self.augment = augment
 
     def __getitem__(self, idx):
         img_path, label, img_id, _ = super(TrainingDataset, self).__getitem__(idx)
-        image: Tensor = self.pil_to_tensor(Image.open(img_path))
+        pil_image = Image.open(img_path)
+        if self.augment:
+            pil_image = self.random_pil_augmentations(pil_image)
+        image: Tensor = self.pil_to_tensor(pil_image)
         image[:] -= torch.mean(image)
         image[:] /= torch.std(image)
         target_vector = _label_to_one_hot(label)
