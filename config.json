@@ -3,7 +3,8 @@
     "learning_rate": 1e-4,
     "weight_decay": 1e-5,
     "n_updates": 15000,
-    "batch_size": 16
+    "batch_size": 16,
+    "rnd_augment": true
   },
   "network_config": {
     "initial_kernels": 16,

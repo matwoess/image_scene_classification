@@ -80,7 +80,11 @@ def _label_to_one_hot(label: str) -> Tensor:
 
 
 class TrainingDataset(SceneDataset):
-    random_pil_augmentations = TF.Compose([TF.RandomHorizontalFlip()])
+    random_pil_augmentations = TF.Compose([
+        TF.RandomHorizontalFlip(),
+        TF.RandomRotation(degrees=10),
+        TF.ColorJitter(hue=.05, brightness=.2, contrast=.2, saturation=.2),
+    ])
     pil_to_tensor = TF.Compose([TF.ToTensor()])
 
     def __init__(self, split: str, augment=False):

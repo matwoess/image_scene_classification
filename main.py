@@ -44,7 +44,7 @@ def main(hyper_params: dict, network_config: dict, eval_settings: dict, eval_onl
     writer = SummaryWriter(log_dir=str(tensorboard_root / experiment_id))
     shutil.copyfile(config_path, out_root / 'config.json')  # save current config file to results
 
-    training_dataset = TrainingDataset(split="seg_train", augment=True)
+    training_dataset = TrainingDataset(split="seg_train", augment=hyper_params['rnd_augment'])
     validation_dataset = TrainingDataset(split="seg_train")
     train_indices, val_indices = training_dataset.get_train_val_subsets()
     train_subset = Subset(training_dataset, train_indices)
